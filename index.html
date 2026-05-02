@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Φίλιππος v3.2 | To Eat, or Not to Eat</title>
+    <title>Φίλιππος v3.3 | To Eat, or Not to Eat</title>
     <style>
         :root {
             --bg-black: #000000;
@@ -53,10 +53,19 @@
         #current-month-display { font-weight: bold; color: var(--theme-pink); font-size: 1.2rem; }
 
         /* 監測看板 */
-        .monitor-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .monitor-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .stat-card { background: var(--card-gray); border: 1px solid var(--border-gray); border-radius: 15px; padding: 18px; text-align: center; transition: 0.3s; }
         .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; display: block; }
         .stat-value { font-size: 1.8rem; font-weight: bold; color: var(--theme-pink); }
+
+        /* 系統操作按鈕 (匯出/匯入) */
+        .sys-controls { display: flex; gap: 15px; margin-bottom: 25px; }
+        .sys-btn { 
+            flex: 1; background: transparent; border: 1px solid var(--border-gray); 
+            color: var(--text-dim); padding: 10px; border-radius: 10px; 
+            cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: 0.3s; 
+        }
+        .sys-btn:hover { border-color: var(--theme-pink); color: var(--theme-pink); }
 
         /* 日曆網格 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; position: relative; }
@@ -138,7 +147,7 @@
 <div class="container">
     <header>
         <h1>Φίλιππος</h1>
-        <div class="subtitle">TO EAT, OR NOT TO EAT v3.2</div>
+        <div class="subtitle">TO EAT, OR NOT TO EAT v3.3</div>
     </header>
 
     <div class="month-nav">
@@ -156,6 +165,12 @@
             <span class="stat-label">FAIL STREAK ALERT</span>
             <span class="stat-value" id="fail-streak">0 DAYS</span>
         </div>
+    </div>
+
+    <!-- 新增系統操作區塊 -->
+    <div class="sys-controls">
+        <button class="sys-btn" onclick="exportData()">📤 匯出備份</button>
+        <button class="sys-btn" onclick="importData()">📥 匯入還原</button>
     </div>
 
     <div class="calendar-grid">
@@ -190,11 +205,9 @@
 </div>
 
 <script>
-    // 使用新版本儲存 Key 以防數據污染
     const STORAGE_KEY = 'steak_engineering_v32';
     let logData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
-    // 啟動時自動設為今天
     let viewDate = new Date(); 
     let activeEditDate = "";
 
@@ -232,6 +245,34 @@
         renderCalendar();
     }
 
+    // --- 新增：資料匯出與匯入邏輯 ---
+    function exportData() {
+        const dataString = JSON.stringify(logData);
+        // 使用 prompt 讓 iOS Safari 用戶可以穩定的全選複製
+        prompt("【資料匯出】請全選並複製以下數據碼，貼上至備忘錄或 LINE 妥善保存：", dataString);
+    }
+
+    function importData() {
+        const inputString = prompt("【資料還原】請貼上您先前備份的數據碼：");
+        if (!inputString) return; // 按下取消或未輸入
+
+        try {
+            const parsedData = JSON.parse(inputString);
+            // 基礎防呆驗證，確保輸入的是一個物件
+            if (typeof parsedData === "object" && parsedData !== null) {
+                logData = parsedData;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(logData));
+                renderCalendar();
+                alert("✅ 數據匯入成功！系統畫面已同步更新。");
+            } else {
+                alert("❌ 格式錯誤，無法匯入。");
+            }
+        } catch (error) {
+            alert("❌ 無效的數據碼，匯入失敗。請確認複製的內容是否完整。");
+        }
+    }
+    // --------------------------------
+
     function renderCalendar() {
         const today = new Date();
         const year = viewDate.getFullYear();
@@ -257,7 +298,6 @@
             const data = logData[dateStr] || {};
             const isSuccess = (data.sugar && data.fasting) || data.sabbath;
 
-            // 判定是否為「今天」
             const isToday = (
                 d === today.getDate() && 
                 month === today.getMonth() && 
