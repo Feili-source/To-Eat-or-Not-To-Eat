@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Φίλιππος v3.2 | To Eat, or Not to Eat</title>
+    <style>
+        :root {
+            --bg-black: #000000;
+            --theme-pink: #F4A7B9;
+            --card-gray: #121212;
+            --border-gray: #222222;
+            --text-dim: #999999;
+            --red-dot: #ff4d4d;
+            --pink-dot: #ff85a2;
+            --blue-dot: #00d2ff;
+            --yellow-dot: #ffd700;
+            --orange-dot: #ff9f43;
+            --white-dot: #ffffff;
+            --alert-y: #f39c12;
+            --alert-r: #c0392b;
+        }
+
+        /* 全域標楷體設定 */
+        body {
+            background-color: var(--bg-black);
+            color: #ffffff;
+            font-family: "Kaiti TC", "Apple LiGothic Medium", "標楷體", "DFKai-SB", serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { width: 100%; max-width: 450px; }
+        header { text-align: center; margin-bottom: 25px; }
+        h1 { color: var(--theme-pink); font-size: 2.5rem; margin: 0; letter-spacing: 4px; }
+        .subtitle { color: var(--text-dim); font-size: 0.9rem; letter-spacing: 2px; margin-top: 8px; font-weight: bold; }
+
+        /* 月份導航 */
+        .month-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            margin: 20px 0; background: var(--card-gray); padding: 12px;
+            border-radius: 12px; border: 1px solid var(--border-gray);
+        }
+        .nav-btn {
+            background: none; border: 1.5px solid var(--theme-pink); color: var(--theme-pink);
+            padding: 6px 15px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: bold;
+        }
+        .nav-btn:hover { background: var(--theme-pink); color: black; }
+        #current-month-display { font-weight: bold; color: var(--theme-pink); font-size: 1.2rem; }
+
+        /* 監測看板 */
+        .monitor-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-gray); border: 1px solid var(--border-gray); border-radius: 15px; padding: 18px; text-align: center; transition: 0.3s; }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; display: block; }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: var(--theme-pink); }
+
+        /* 日曆網格 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; position: relative; }
+        .weekday-label { font-size: 0.8rem; color: var(--text-dim); text-align: center; margin-bottom: 10px; font-weight: bold; }
+        
+        .day-box { 
+            aspect-ratio: 1 / 1; background: var(--card-gray); border: 1px solid var(--border-gray); 
+            border-radius: 10px; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        /* 今日高亮樣式 */
+        .is-today {
+            border: 2px solid var(--theme-pink) !important;
+            box-shadow: 0 0 15px rgba(244, 167, 185, 0.4);
+            z-index: 5;
+        }
+        .is-today::before {
+            content: "TODAY";
+            position: absolute;
+            top: -15px;
+            font-size: 0.6rem;
+            color: var(--theme-pink);
+            font-weight: bold;
+        }
+
+        /* 安息日發亮樣式 */
+        .sabbath-active {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: #ffffff !important;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        .sabbath-active .day-num { color: #ffffff !important; font-weight: bold; }
+
+        .day-num { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 4px; }
+        .dots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: #222; }
+        
+        .active-sugar { background: var(--red-dot); box-shadow: 0 0 5px var(--red-dot); }
+        .active-fasting { background: var(--pink-dot); box-shadow: 0 0 5px var(--pink-dot); }
+        .active-water { background: var(--blue-dot); box-shadow: 0 0 5px var(--blue-dot); }
+        .active-protein { background: var(--yellow-dot); }
+        .active-core { background: var(--orange-dot); }
+        .active-sabbath { background: var(--white-dot); box-shadow: 0 0 8px #fff; }
+
+        /* 彈窗樣式 */
+        #modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); z-index: 100; justify-content: center; align-items: center;
+        }
+        .modal {
+            background: var(--card-gray); padding: 30px; border-radius: 20px;
+            border: 2px solid var(--theme-pink); width: 85%; max-width: 320px;
+        }
+        .modal h3 { color: var(--theme-pink); margin-top: 0; text-align: center; font-size: 1.4rem; }
+        .option-item { display: flex; align-items: center; gap: 15px; margin: 18px 0; font-size: 1.1rem; cursor: pointer; }
+        .option-item input { width: 22px; height: 22px; accent-color: var(--theme-pink); }
+        .modal-btns { display: flex; gap: 12px; margin-top: 25px; }
+        .modal-btns button { flex: 1; padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 1rem; }
+        .save-btn { background: var(--theme-pink); color: black; }
+        .cancel-btn { background: #333; color: white; }
+
+        /* 圖例樣式 */
+        .legend { 
+            margin-top: 40px; border-top: 1px solid var(--border-gray); padding-top: 25px; 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; 
+        }
+        .legend-item { display: flex; align-items: center; gap: 12px; font-size: 1.1rem; color: #eee; }
+        .l-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        /* 警告動畫 */
+        .warning-red { border-color: var(--alert-r) !important; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 50% { opacity: 0.6; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Φίλιππος</h1>
+        <div class="subtitle">TO EAT, OR NOT TO EAT v3.2</div>
+    </header>
+
+    <div class="month-nav">
+        <button class="nav-btn" onclick="changeMonth(-1)">PREV</button>
+        <div id="current-month-display">APRIL 2026</div>
+        <button class="nav-btn" onclick="changeMonth(1)">NEXT</button>
+    </div>
+
+    <div class="monitor-panel">
+        <div class="stat-card" id="card-rate">
+            <span class="stat-label">STRUCTURE STABILITY</span>
+            <span class="stat-value" id="success-rate">0%</span>
+        </div>
+        <div class="stat-card" id="card-alert">
+            <span class="stat-label">FAIL STREAK ALERT</span>
+            <span class="stat-value" id="fail-streak">0 DAYS</span>
+        </div>
+    </div>
+
+    <div class="calendar-grid">
+        <div class="weekday-label">日</div><div class="weekday-label">一</div><div class="weekday-label">二</div><div class="weekday-label">三</div><div class="weekday-label">四</div><div class="weekday-label">五</div><div class="weekday-label">六</div>
+    </div>
+    <div class="calendar-grid" id="calendar-body"></div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="l-dot" style="background:var(--red-dot)"></div> 糖分控制 &lt; 25g</div>
+        <div class="legend-item"><div class="l-dot" style="background:var(--pink-dot)"></div> 16/8 斷食達標</div>
+        <div class="legend-item"><div class="l-dot" style="background:var(--blue-dot)"></div> 水分 (Stanley x2)</div>
+        <div class="legend-item"><div class="l-dot" style="background:var(--yellow-dot)"></div> 蛋白質足量</div>
+        <div class="legend-item"><div class="l-dot" style="background:var(--orange-dot)"></div> 核心運動</div>
+        <div class="legend-item"><div class="l-dot" style="background:var(--white-dot)"></div> 健康安息日</div>
+    </div>
+</div>
+
+<div id="modal-overlay">
+    <div class="modal">
+        <h3 id="modal-date-title">DATE</h3>
+        <label class="option-item"><input type="checkbox" id="chk-sugar"> 糖分控制 &lt; 25g</label>
+        <label class="option-item"><input type="checkbox" id="chk-fasting"> 16/8 斷食達標</label>
+        <label class="option-item"><input type="checkbox" id="chk-water"> 水分 (Stanley x2)</label>
+        <label class="option-item"><input type="checkbox" id="chk-protein"> 蛋白質足量</label>
+        <label class="option-item"><input type="checkbox" id="chk-core"> 核心運動</label>
+        <label class="option-item"><input type="checkbox" id="chk-sabbath"> 健康安息日</label>
+        <div class="modal-btns">
+            <button class="cancel-btn" onclick="closeModal()">取消</button>
+            <button class="save-btn" onclick="saveDayData()">儲存報告</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 使用新版本儲存 Key 以防數據污染
+    const STORAGE_KEY = 'steak_engineering_v32';
+    let logData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+    // 啟動時自動設為今天
+    let viewDate = new Date(); 
+    let activeEditDate = "";
+
+    function changeMonth(offset) {
+        viewDate.setMonth(viewDate.getMonth() + offset);
+        renderCalendar();
+    }
+
+    function openModal(dateStr) {
+        activeEditDate = dateStr;
+        document.getElementById('modal-date-title').innerText = dateStr;
+        const data = logData[dateStr] || {};
+        document.getElementById('chk-sugar').checked = data.sugar || false;
+        document.getElementById('chk-fasting').checked = data.fasting || false;
+        document.getElementById('chk-water').checked = data.water || false;
+        document.getElementById('chk-protein').checked = data.protein || false;
+        document.getElementById('chk-core').checked = data.core || false;
+        document.getElementById('chk-sabbath').checked = data.sabbath || false;
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+    function saveDayData() {
+        logData[activeEditDate] = {
+            sugar: document.getElementById('chk-sugar').checked,
+            fasting: document.getElementById('chk-fasting').checked,
+            water: document.getElementById('chk-water').checked,
+            protein: document.getElementById('chk-protein').checked,
+            core: document.getElementById('chk-core').checked,
+            sabbath: document.getElementById('chk-sabbath').checked
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(logData));
+        closeModal();
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const today = new Date();
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(viewDate);
+        document.getElementById('current-month-display').innerText = `${monthName.toUpperCase()} ${year}`;
+
+        const body = document.getElementById('calendar-body');
+        body.innerHTML = '';
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) {
+            const empty = document.createElement('div');
+            empty.style.aspectRatio = "1/1";
+            body.appendChild(empty);
+        }
+
+        let successCount = 0; let streak = 0; let loggedDays = 0;
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const data = logData[dateStr] || {};
+            const isSuccess = (data.sugar && data.fasting) || data.sabbath;
+
+            // 判定是否為「今天」
+            const isToday = (
+                d === today.getDate() && 
+                month === today.getMonth() && 
+                year === today.getFullYear()
+            );
+
+            if (logData[dateStr]) {
+                loggedDays++;
+                if (isSuccess) { successCount++; streak = 0; } else { streak++; }
+            }
+
+            const box = document.createElement('div');
+            box.className = 'day-box';
+            if (isToday) box.classList.add('is-today');
+            if (data.sabbath) box.classList.add('sabbath-active');
+            
+            box.onclick = () => openModal(dateStr);
+            box.innerHTML = `
+                <span class="day-num">${d}</span>
+                <div class="dots-grid">
+                    <div class="dot ${data.sugar ? 'active-sugar' : ''}"></div>
+                    <div class="dot ${data.fasting ? 'active-fasting' : ''}"></div>
+                    <div class="dot ${data.water ? 'active-water' : ''}"></div>
+                    <div class="dot ${data.protein ? 'active-protein' : ''}"></div>
+                    <div class="dot ${data.core ? 'active-core' : ''}"></div>
+                    <div class="dot ${data.sabbath ? 'active-sabbath' : ''}"></div>
+                </div>
+            `;
+            body.appendChild(box);
+        }
+
+        const rate = loggedDays > 0 ? Math.round((successCount / loggedDays) * 100) : 0;
+        document.getElementById('success-rate').innerText = `${rate}%`;
+        document.getElementById('fail-streak').innerText = `${streak} DAYS`;
+        document.getElementById('card-alert').className = 'stat-card' + (streak >= 3 ? ' warning-red' : '');
+    }
+
+    renderCalendar();
+</script>
+</body>
+</html>
