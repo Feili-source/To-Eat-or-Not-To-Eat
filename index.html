@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Φίλιππος v3.3 | To Eat, or Not to Eat</title>
+    <title>Φίλιππος v4.0 | To Eat, or Not to Eat</title>
     <style>
         :root {
             --bg-black: #000000;
@@ -17,11 +17,9 @@
             --yellow-dot: #ffd700;
             --orange-dot: #ff9f43;
             --white-dot: #ffffff;
-            --alert-y: #f39c12;
             --alert-r: #c0392b;
         }
 
-        /* 全域標楷體設定 */
         body {
             background-color: var(--bg-black);
             color: #ffffff;
@@ -39,7 +37,6 @@
         h1 { color: var(--theme-pink); font-size: 2.5rem; margin: 0; letter-spacing: 4px; }
         .subtitle { color: var(--text-dim); font-size: 0.9rem; letter-spacing: 2px; margin-top: 8px; font-weight: bold; }
 
-        /* 月份導航 */
         .month-nav {
             display: flex; justify-content: space-between; align-items: center;
             margin: 20px 0; background: var(--card-gray); padding: 12px;
@@ -52,67 +49,73 @@
         .nav-btn:hover { background: var(--theme-pink); color: black; }
         #current-month-display { font-weight: bold; color: var(--theme-pink); font-size: 1.2rem; }
 
-        /* 監測看板 */
         .monitor-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .stat-card { background: var(--card-gray); border: 1px solid var(--border-gray); border-radius: 15px; padding: 18px; text-align: center; transition: 0.3s; }
         .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; display: block; }
         .stat-value { font-size: 1.8rem; font-weight: bold; color: var(--theme-pink); }
 
-        /* 系統操作按鈕 (匯出/匯入) */
-        .sys-controls { display: flex; gap: 15px; margin-bottom: 25px; }
-        .sys-btn { 
-            flex: 1; background: transparent; border: 1px solid var(--border-gray); 
-            color: var(--text-dim); padding: 10px; border-radius: 10px; 
-            cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: 0.3s; 
+        .sys-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 28px 0 24px; }
+        .sys-btn {
+            background: transparent; border: 1px solid var(--border-gray);
+            color: var(--text-dim); padding: 10px; border-radius: 10px;
+            cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: 0.3s;
         }
         .sys-btn:hover { border-color: var(--theme-pink); color: var(--theme-pink); }
 
-        /* 日曆網格 */
+        .nutrition-panel {
+            background: var(--card-gray);
+            border: 1px solid var(--border-gray);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 22px;
+        }
+        .nutrition-panel h2 {
+            color: var(--theme-pink);
+            font-size: 1.2rem;
+            margin: 0 0 12px;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        .nutrition-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .nutrition-grid label { color: #eee; font-size: 0.9rem; }
+        .nutrition-grid input, .nutrition-grid select, .nutrition-panel textarea {
+            width: 100%; box-sizing: border-box; margin-top: 5px;
+            background: #080808; color: #fff; border: 1px solid var(--border-gray);
+            border-radius: 8px; padding: 9px; font-family: inherit;
+        }
+        .nutrition-panel textarea { min-height: 70px; resize: vertical; }
+        .wide { grid-column: 1 / -1; }
+        .nutrition-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .nutrition-actions button {
+            background: var(--theme-pink); color: #000; border: none; border-radius: 10px;
+            padding: 10px; font-family: inherit; font-weight: bold; cursor: pointer;
+        }
+        .nutrition-actions button.secondary { background: transparent; color: var(--theme-pink); border: 1px solid var(--theme-pink); }
+
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; position: relative; }
         .weekday-label { font-size: 0.8rem; color: var(--text-dim); text-align: center; margin-bottom: 10px; font-weight: bold; }
-        
-        .day-box { 
-            aspect-ratio: 1 / 1; background: var(--card-gray); border: 1px solid var(--border-gray); 
-            border-radius: 10px; display: flex; flex-direction: column; align-items: center; 
+
+        .day-box {
+            aspect-ratio: 1 / 1; background: var(--card-gray); border: 1px solid var(--border-gray);
+            border-radius: 10px; display: flex; flex-direction: column; align-items: center;
             justify-content: center; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
-        
-        /* 今日高亮樣式 */
-        .is-today {
-            border: 2px solid var(--theme-pink) !important;
-            box-shadow: 0 0 15px rgba(244, 167, 185, 0.4);
-            z-index: 5;
-        }
-        .is-today::before {
-            content: "TODAY";
-            position: absolute;
-            top: -15px;
-            font-size: 0.6rem;
-            color: var(--theme-pink);
-            font-weight: bold;
-        }
-
-        /* 安息日發亮樣式 */
-        .sabbath-active {
-            background: rgba(255, 255, 255, 0.15) !important;
-            border-color: #ffffff !important;
-            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2);
-        }
+        .is-today { border: 2px solid var(--theme-pink) !important; box-shadow: 0 0 15px rgba(244, 167, 185, 0.4); z-index: 5; }
+        .is-today::before { content: "TODAY"; position: absolute; top: -15px; font-size: 0.6rem; color: var(--theme-pink); font-weight: bold; }
+        .sabbath-active { background: rgba(255, 255, 255, 0.15) !important; border-color: #ffffff !important; box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2); }
         .sabbath-active .day-num { color: #ffffff !important; font-weight: bold; }
-
         .day-num { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 4px; }
         .dots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
         .dot { width: 6px; height: 6px; border-radius: 50%; background: #222; }
-        
         .active-sugar { background: var(--red-dot); box-shadow: 0 0 5px var(--red-dot); }
         .active-fasting { background: var(--pink-dot); box-shadow: 0 0 5px var(--pink-dot); }
         .active-water { background: var(--blue-dot); box-shadow: 0 0 5px var(--blue-dot); }
         .active-protein { background: var(--yellow-dot); }
         .active-core { background: var(--orange-dot); }
         .active-sabbath { background: var(--white-dot); box-shadow: 0 0 8px #fff; }
+        .has-nutrition::after { content: "📦"; position: absolute; right: 4px; bottom: 2px; font-size: 0.65rem; opacity: 0.85; }
 
-        /* 彈窗樣式 */
         #modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.92); z-index: 100; justify-content: center; align-items: center;
@@ -129,15 +132,9 @@
         .save-btn { background: var(--theme-pink); color: black; }
         .cancel-btn { background: #333; color: white; }
 
-        /* 圖例樣式 */
-        .legend { 
-            margin-top: 40px; border-top: 1px solid var(--border-gray); padding-top: 25px; 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; 
-        }
+        .legend { margin-top: 40px; border-top: 1px solid var(--border-gray); padding-top: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .legend-item { display: flex; align-items: center; gap: 12px; font-size: 1.1rem; color: #eee; }
         .l-dot { width: 12px; height: 12px; border-radius: 50%; }
-
-        /* 警告動畫 */
         .warning-red { border-color: var(--alert-r) !important; animation: pulse 1.5s infinite; }
         @keyframes pulse { 50% { opacity: 0.6; } }
     </style>
@@ -147,7 +144,7 @@
 <div class="container">
     <header>
         <h1>Φίλιππος</h1>
-        <div class="subtitle">TO EAT, OR NOT TO EAT v3.3</div>
+        <div class="subtitle">TO EAT, OR NOT TO EAT v4.0</div>
     </header>
 
     <div class="month-nav">
@@ -167,12 +164,6 @@
         </div>
     </div>
 
-    <!-- 新增系統操作區塊 -->
-    <div class="sys-controls">
-        <button class="sys-btn" onclick="exportData()">📤 匯出備份</button>
-        <button class="sys-btn" onclick="importData()">📥 匯入還原</button>
-    </div>
-
     <div class="calendar-grid">
         <div class="weekday-label">日</div><div class="weekday-label">一</div><div class="weekday-label">二</div><div class="weekday-label">三</div><div class="weekday-label">四</div><div class="weekday-label">五</div><div class="weekday-label">六</div>
     </div>
@@ -186,6 +177,62 @@
         <div class="legend-item"><div class="l-dot" style="background:var(--orange-dot)"></div> 核心運動</div>
         <div class="legend-item"><div class="l-dot" style="background:var(--white-dot)"></div> 健康安息日</div>
     </div>
+
+    <div class="sys-controls">
+        <button class="sys-btn" onclick="exportData()">📤 匯出備份</button>
+        <button class="sys-btn" onclick="importData()">📥 匯入還原</button>
+        <button class="sys-btn" onclick="exportCurrentMonthSummary()">📊 LOG_EXPORT</button>
+        <button class="sys-btn" onclick="clearNutritionForm()">🧹 清空表單</button>
+    </div>
+
+    <section class="nutrition-panel">
+        <h2>📦 飲食日誌 N3.1</h2>
+        <div class="nutrition-grid">
+            <label>日期
+                <input id="n-date" type="text" inputmode="numeric" placeholder="YYYY-MM-DD">
+            </label>
+            <label>餐次
+                <select id="n-meal">
+                    <option value="第一餐">第一餐</option>
+                    <option value="最後餐">最後餐</option>
+                    <option value="全日結算">全日結算</option>
+                </select>
+            </label>
+            <label>開窗
+                <input id="n-start" type="time">
+            </label>
+            <label>關窗
+                <input id="n-end" type="time">
+            </label>
+            <label>蛋白質 g
+                <input id="n-protein" type="number" min="0" step="1" placeholder="約">
+            </label>
+            <label>碳水 g
+                <input id="n-carbs" type="number" min="0" step="1" placeholder="約">
+            </label>
+            <label>糖 g
+                <input id="n-sugar" type="number" min="0" step="1" placeholder="約">
+            </label>
+            <label>評級/狀態
+                <input id="n-status" type="text" placeholder="如 S+ / 穩定">
+            </label>
+            <label class="wide">食物摘要
+                <textarea id="n-foods" placeholder="例：雞胸、糙米、芭樂、地瓜葉"></textarea>
+            </label>
+            <label class="wide">風險 / 缺口
+                <textarea id="n-risks" placeholder="例：鈉偏高、維生素D不足"></textarea>
+            </label>
+            <label class="wide">note
+                <textarea id="n-note" placeholder="給 LOG_EXPORT 的一句話摘要"></textarea>
+            </label>
+        </div>
+        <div class="nutrition-actions">
+            <button onclick="saveNutritionEntry()">儲存飲食日誌</button>
+            <button class="secondary" onclick="exportN31Packet()">N3.1</button>
+            <button class="secondary" onclick="exportAnalysisPrompt()">DRIs v8+ Analysis</button>
+            <button class="secondary" onclick="exportLogExport()">LOG_EXPORT</button>
+        </div>
+    </section>
 </div>
 
 <div id="modal-overlay">
@@ -205,11 +252,148 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'steak_engineering_v32';
-    let logData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    const STORAGE_KEY = 'steak_engineering_v40';
+    const LEGACY_STORAGE_KEY = 'steak_engineering_v32';
 
-    let viewDate = new Date(); 
+    const legacyData = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY)) || {};
+    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
+
+    let appData = savedState || {
+        checks: legacyData,
+        nutrition: {}
+    };
+
+    let logData = appData.checks || {};
+    let nutritionData = appData.nutrition || {};
+
+    let viewDate = new Date();
     let activeEditDate = "";
+
+    function persistAll() {
+        appData.checks = logData;
+        appData.nutrition = nutritionData;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    function todayString() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    function normalizeDate(value) {
+        const raw = String(value || '').trim().replaceAll('/', '-');
+        const match = raw.match(new RegExp('^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})$'));
+        if (!match) return raw || todayString();
+        const year = match[1];
+        const month = String(match[2]).padStart(2, '0');
+        const day = String(match[3]).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function getNutritionFormData() {
+        return {
+            date: normalizeDate(document.getElementById('n-date').value),
+            meal: document.getElementById('n-meal').value,
+            windowStart: document.getElementById('n-start').value,
+            windowEnd: document.getElementById('n-end').value,
+            protein: Number(document.getElementById('n-protein').value || 0),
+            carbs: Number(document.getElementById('n-carbs').value || 0),
+            sugar: Number(document.getElementById('n-sugar').value || 0),
+            status: document.getElementById('n-status').value.trim(),
+            foods: document.getElementById('n-foods').value.trim(),
+            risks: document.getElementById('n-risks').value.trim(),
+            note: document.getElementById('n-note').value.trim()
+        };
+    }
+
+    function setNutritionFormData(entry) {
+        document.getElementById('n-date').value = normalizeDate(entry.date || todayString());
+        document.getElementById('n-meal').value = entry.meal || '第一餐';
+        document.getElementById('n-start').value = entry.windowStart || '';
+        document.getElementById('n-end').value = entry.windowEnd || '';
+        document.getElementById('n-protein').value = entry.protein || '';
+        document.getElementById('n-carbs').value = entry.carbs || '';
+        document.getElementById('n-sugar').value = entry.sugar || '';
+        document.getElementById('n-status').value = entry.status || '';
+        document.getElementById('n-foods').value = entry.foods || '';
+        document.getElementById('n-risks').value = entry.risks || '';
+        document.getElementById('n-note').value = entry.note || '';
+    }
+
+    function clearNutritionForm() {
+        setNutritionFormData({ date: todayString(), meal: '第一餐' });
+    }
+
+    function saveNutritionEntry() {
+        const entry = getNutritionFormData();
+        document.getElementById('n-date').value = entry.date;
+        if (!entry.date) {
+            alert('請先選擇日期。');
+            return;
+        }
+        nutritionData[entry.date] = entry;
+        persistAll();
+        renderCalendar();
+        alert('✅ 飲食日誌已儲存。');
+    }
+
+    function getEntryForExport() {
+        const formEntry = getNutritionFormData();
+        return nutritionData[formEntry.date] || formEntry;
+    }
+
+    function copyViaPrompt(title, text) {
+        prompt(title + '：請全選複製', text);
+    }
+
+    function calculateWindow(entry) {
+        if (!entry.windowStart || !entry.windowEnd) return { eating: '', fasting: '' };
+        const [sh, sm] = entry.windowStart.split(':').map(Number);
+        const [eh, em] = entry.windowEnd.split(':').map(Number);
+        const start = sh * 60 + sm;
+        const end = eh * 60 + em;
+        if (end < start) return { eating: '', fasting: '' };
+        const eatingMin = end - start;
+        const fastingMin = 24 * 60 - eatingMin;
+        return {
+            eating: `${Math.floor(eatingMin / 60)}h${String(eatingMin % 60).padStart(2, '0')}m`,
+            fasting: `約${Math.floor(fastingMin / 60)}h${String(fastingMin % 60).padStart(2, '0')}m`
+        };
+    }
+
+    function exportN31Packet() {
+        const entry = getEntryForExport();
+        const win = calculateWindow(entry);
+        const packet = `📦 飲食紀錄｜N3.1（DRIs v8+ 參考）\n\n【記錄日期】\n${entry.date}（${entry.meal || '第一餐 / 最後餐'}）\n\n【DRIs v8+ 原則說明】\n（基於國健署建議並稍加嚴格）\n- 添加糖：< 25g\n- 淨碳水：≥ 50g（建議落在 80–120g）\n- 蛋白質：充足（依體重與活動量）\n- 脂肪：不為零，避免單餐過高\n- 微量營養：鈣、鎂、鋅、維生素D需留意\n\n━━━━━━━━━━━━━━━\n\n【進食窗口 ⏱️】\n開窗：${entry.windowStart || ''}\n關窗：${entry.windowEnd || ''}\n進食時長：${win.eating}\n斷食：${win.fasting}\n\n━━━━━━━━━━━━━━━\n\n【食材分類 🔍】\n\n🥩 核心蛋白質\n${entry.foods || '（填寫食物）'}\n→（簡要判斷）\n👉 約 ${entry.protein || '__'} g\n\n🍚 碳水\n（填寫碳水來源）\n→（簡要判斷）\n👉 約 ${entry.carbs || '__'} g\n\n🥬 纖維與微量\n（填寫蔬菜、水果、微量營養來源）\n→（簡要判斷）\n\n🥤 補給\n（填寫液體補給）\n→（是否有糖）\n\n━━━━━━━━━━━━━━━\n\n⚠️ 食物風險掃描\n${entry.risks || '- '}\n\n━━━━━━━━━━━━━━━\n\n🔍 潛在缺口\n${entry.risks || '- '}\n\n━━━━━━━━━━━━━━━\n\n📊 當前累積狀態\n蛋白質：約 ${entry.protein || '__'} g\n碳水：約 ${entry.carbs || '__'} g\n糖：約 ${entry.sugar || '__'} g\n\n━━━━━━━━━━━━━━━\n\n📉 協定差距（DRIs v8+）\n蛋白質：${entry.protein ? (entry.protein >= 70 ? '達標' : '需補強') : ''}\n碳水：${entry.carbs ? (entry.carbs >= 50 ? '達標（≥50g）' : '低於下限 ⚠️') : ''}\n糖：${entry.sugar !== undefined ? (entry.sugar < 25 ? '安全（<25g）' : '超過上限 ⚠️') : ''}\n（其他）：\n\n━━━━━━━━━━━━━━━\n\n✦ 𝑅𝑒𝓋𝒾𝑒𝓌: Gemini (Nutrition Analysis)`;
+        copyViaPrompt('N3.1', packet);
+    }
+
+    function exportAnalysisPrompt() {
+        const entry = getEntryForExport();
+        const promptText = `請以「工程與系統除錯」的角度，幫我分析以下飲食紀錄，\n並參考 DRIs v8+（基於國健署建議並稍加嚴格）進行判斷。\n\n【分析重點】\n1. 是否觸及關鍵邊界（糖 <25g、碳水 ≥50g）\n2. 是否存在潛在風險\n3. 是否有接近邊界但尚未爆的情況\n\n【分析方式】\n- 用客觀機制說明\n- 不說教、不誇讚\n- 聚焦可執行建議\n\n【輸出格式（請依此格式回覆）】\n1. 🟢 執行亮點\n2. 🔴 系統風險\n3. 🔧 明日調整\n\n4. 📦 LOG_EXPORT（請依以下格式輸出）\ndate:\nprotein:\ncarbs:\nsugar:\nwindow:\nnote:\n\n（請只根據提供資料分析，不需假設未提供內容）\n\n【待分析飲食資料】\n日期：${entry.date}\n餐次：${entry.meal}\n開窗：${entry.windowStart}\n關窗：${entry.windowEnd}\n蛋白質：約 ${entry.protein}g\n碳水：約 ${entry.carbs}g\n糖：約 ${entry.sugar}g\n食物摘要：${entry.foods}\n風險/缺口：${entry.risks}\nnote：${entry.note}`;
+        copyViaPrompt('DRIs v8+ Analysis', promptText);
+    }
+
+    function exportLogExport() {
+        const entry = getEntryForExport();
+        const windowText = entry.windowStart && entry.windowEnd ? `${entry.windowStart}-${entry.windowEnd}` : '';
+        const logText = `【LOG_EXPORT】\ndate: ${entry.date || ''}\nprotein: ${entry.protein ? entry.protein + 'g' : ''}\ncarbs: ${entry.carbs ? entry.carbs + 'g' : ''}\nsugar: ${entry.sugar || entry.sugar === 0 ? entry.sugar + 'g' : ''}\nwindow: ${windowText}\nnote: ${entry.note || ''}`;
+        copyViaPrompt('LOG_EXPORT', logText);
+    }
+
+    function exportCurrentMonthSummary() {
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const rows = [];
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const n = nutritionData[dateStr];
+            if (!n) continue;
+            rows.push(`${dateStr} | protein:${n.protein || ''}g | carbs:${n.carbs || ''}g | sugar:${n.sugar || ''}g | window:${n.windowStart || ''}-${n.windowEnd || ''} | note:${n.note || ''}`);
+        }
+        copyViaPrompt('本月飲食摘要', rows.join('\n') || '本月尚無飲食日誌。');
+    }
 
     function changeMonth(offset) {
         viewDate.setMonth(viewDate.getMonth() + offset);
@@ -227,6 +411,12 @@
         document.getElementById('chk-core').checked = data.core || false;
         document.getElementById('chk-sabbath').checked = data.sabbath || false;
         document.getElementById('modal-overlay').style.display = 'flex';
+
+        if (nutritionData[dateStr]) {
+            setNutritionFormData(nutritionData[dateStr]);
+        } else {
+            setNutritionFormData({ date: dateStr, meal: '第一餐' });
+        }
     }
 
     function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
@@ -240,28 +430,35 @@
             core: document.getElementById('chk-core').checked,
             sabbath: document.getElementById('chk-sabbath').checked
         };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(logData));
+        persistAll();
         closeModal();
         renderCalendar();
     }
 
-    // --- 新增：資料匯出與匯入邏輯 ---
     function exportData() {
-        const dataString = JSON.stringify(logData);
-        // 使用 prompt 讓 iOS Safari 用戶可以穩定的全選複製
-        prompt("【資料匯出】請全選並複製以下數據碼，貼上至備忘錄/記事本或 Discord 妥善保存：", dataString);
+        persistAll();
+        const dataString = JSON.stringify(appData);
+        prompt("【資料匯出】請全選並複製以下數據碼，貼上至備忘錄妥善保存：", dataString);
     }
 
     function importData() {
         const inputString = prompt("【資料還原】請貼上您先前備份的數據碼：");
-        if (!inputString) return; // 按下取消或未輸入
+        if (!inputString) return;
 
         try {
             const parsedData = JSON.parse(inputString);
-            // 基礎防呆驗證，確保輸入的是一個物件
             if (typeof parsedData === "object" && parsedData !== null) {
-                logData = parsedData;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(logData));
+                if (parsedData.checks || parsedData.nutrition) {
+                    appData = parsedData;
+                    logData = parsedData.checks || {};
+                    nutritionData = parsedData.nutrition || {};
+                } else {
+                    // 相容舊版：如果匯入的是純六燈資料，就放入 checks。
+                    logData = parsedData;
+                    nutritionData = {};
+                    appData = { checks: logData, nutrition: nutritionData };
+                }
+                persistAll();
                 renderCalendar();
                 alert("✅ 數據匯入成功！系統畫面已同步更新。");
             } else {
@@ -271,7 +468,6 @@
             alert("❌ 無效的數據碼，匯入失敗。請確認複製的內容是否完整。");
         }
     }
-    // --------------------------------
 
     function renderCalendar() {
         const today = new Date();
@@ -299,8 +495,8 @@
             const isSuccess = (data.sugar && data.fasting) || data.sabbath;
 
             const isToday = (
-                d === today.getDate() && 
-                month === today.getMonth() && 
+                d === today.getDate() &&
+                month === today.getMonth() &&
                 year === today.getFullYear()
             );
 
@@ -313,7 +509,8 @@
             box.className = 'day-box';
             if (isToday) box.classList.add('is-today');
             if (data.sabbath) box.classList.add('sabbath-active');
-            
+            if (nutritionData[dateStr]) box.classList.add('has-nutrition');
+
             box.onclick = () => openModal(dateStr);
             box.innerHTML = `
                 <span class="day-num">${d}</span>
@@ -335,6 +532,7 @@
         document.getElementById('card-alert').className = 'stat-card' + (streak >= 3 ? ' warning-red' : '');
     }
 
+    clearNutritionForm();
     renderCalendar();
 </script>
 </body>
